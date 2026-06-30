@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, LogOut, PlusCircle, Ticket } from "lucide-react";
+import { BarChart3, Bot, LogOut, PlusCircle, Ticket } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
@@ -10,13 +10,15 @@ import { ChatWidget } from "./ChatWidget";
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: BarChart3 },
   { href: "/tickets", label: "Tickets", icon: Ticket },
-  { href: "/tickets/new", label: "New Ticket", icon: PlusCircle }
+  { href: "/tickets/new", label: "New Ticket", icon: PlusCircle },
+  { href: "/chat", label: "Agent Chat", icon: Bot }
 ];
 
 export function AppShell({ children, user }: { children: ReactNode; user?: User | null }) {
   const router = useRouter();
   const pathname = usePathname();
   const currentUser = user ?? getStoredUser();
+  const showChatWidget = Boolean(currentUser && pathname !== "/chat");
 
   function logout() {
     clearSession();
@@ -68,7 +70,7 @@ export function AppShell({ children, user }: { children: ReactNode; user?: User 
         </header>
         <main className="px-4 py-6 md:px-8">{children}</main>
       </div>
-      {currentUser ? <ChatWidget user={currentUser} /> : null}
+      {showChatWidget && currentUser ? <ChatWidget user={currentUser} /> : null}
     </div>
   );
 }

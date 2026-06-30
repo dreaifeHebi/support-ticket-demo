@@ -8,7 +8,7 @@ First version target: complete local demo with usable API and usable pages.
 
 - Admin can view all tickets, search/filter/sort/paginate, update status, change priority, assign an owner, comment, and view dashboard stats.
 - User can register, log in, create tickets, view only their own tickets, and comment on their own tickets.
-- V2 chatbot can answer ticket questions and run allowed ticket actions from a bottom-right floating panel.
+- V2 chatbot can answer ticket questions and run allowed ticket actions from a bottom-right floating panel or the full `/chat` page.
 - Status changes write `ticket_status_history`.
 - Setting a ticket to `RESOLVED` sets `resolvedAt` when empty.
 - Reopening to `OPEN` or `IN_PROGRESS` clears `resolvedAt`.
@@ -116,7 +116,7 @@ See [docs/database.md](docs/database.md) for model details and access rules.
 
 ## Chatbot Agent
 
-The authenticated chatbot lives in a bottom-right floating panel after login. It uses an OpenAI-compatible Chat Completions API and maps each message to a server-validated action. The model never receives direct Prisma or SQL access.
+The authenticated chatbot lives in a bottom-right floating panel after login and has a dedicated `/chat` page for longer conversations. Both surfaces share browser-local chat history, so prior Q&A stays visible while moving between dashboard, ticket, and chat pages. It uses an OpenAI-compatible Chat Completions API and maps each message to a server-validated action. The model never receives direct Prisma or SQL access.
 
 Agent rules are documented in [docs/agent.md](docs/agent.md):
 
@@ -154,5 +154,6 @@ Bottom-right chatbot widget:
 ## Known Tradeoffs
 
 - This first version uses simple localStorage token handling to keep the demo fast to inspect.
+- Chat history is persisted in browser localStorage per user for demo continuity, not in a server-side conversation table.
 - Docker Compose uses `prisma db push` for frictionless demo startup instead of committed production migrations.
 - No file attachments, SLA timers, CSV export, or email notifications yet.

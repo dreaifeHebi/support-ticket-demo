@@ -40,6 +40,11 @@ Navigation:
 - The chatbot must not claim it opened a page.
 - The chatbot should return links to the relevant page, such as `/tickets/:id`.
 
+Frontend history:
+
+- The floating widget and `/chat` page share the same browser-local message history per user.
+- The API remains stateless for conversations; each request sends recent messages plus the current JWT user context.
+
 ## Allowed Actions
 
 Return only JSON with this shape:
