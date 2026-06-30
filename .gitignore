@@ -1,0 +1,11 @@
+node_modules/
+.next/
+dist/
+coverage/
+.env
+.env.local
+.playwright-cli/
+.DS_Store
+npm-debug.log*
+*.tsbuildinfo
+prisma/dev.db

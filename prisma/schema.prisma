@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model User {
+  id             String                @id @default(cuid())
+  name           String
+  email          String                @unique
+  passwordHash   String
+  role           Role                  @default(USER)
+  createdTickets Ticket[]              @relation("TicketCreatedBy")
+  assignedTickets Ticket[]             @relation("TicketAssignee")
+  comments       Comment[]             @relation("CommentAuthor")
+  statusChanges  TicketStatusHistory[] @relation("StatusChangedBy")
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  @@map("users")
+}
+
+model Ticket {
+  id          String                @id @default(cuid())
+  title       String
+  description String
+  status      TicketStatus          @default(OPEN)
+  priority    TicketPriority        @default(MEDIUM)
+  category    String
+  createdById String
+  assigneeId  String?
+  resolvedAt  DateTime?
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  createdBy   User                  @relation("TicketCreatedBy", fields: [createdById], references: [id])
+  assignee    User?                 @relation("TicketAssignee", fields: [assigneeId], references: [id])
+  comments    Comment[]
+  history     TicketStatusHistory[]
+
+  @@index([createdById])
+  @@index([assigneeId])
+  @@index([status])
+  @@index([priority])
+  @@index([category])
+  @@map("tickets")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  ticketId  String
+  authorId  String
+  body      String
+  createdAt DateTime @default(now())
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author    User     @relation("CommentAuthor", fields: [authorId], references: [id])
+
+  @@index([ticketId])
+  @@index([authorId])
+  @@map("comments")
+}
+
+model TicketStatusHistory {
+  id          String       @id @default(cuid())
+  ticketId    String
+  fromStatus  TicketStatus
+  toStatus    TicketStatus
+  changedById String
+  createdAt   DateTime     @default(now())
+  ticket      Ticket       @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  changedBy   User         @relation("StatusChangedBy", fields: [changedById], references: [id])
+
+  @@index([ticketId])
+  @@index([changedById])
+  @@map("ticket_status_history")
+}
