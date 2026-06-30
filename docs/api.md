@@ -173,3 +173,44 @@ Admin only. Returns:
 ### GET /admin/users
 
 Admin only. Returns users with ticket counts for assignment/filter controls.
+
+## Chatbot
+
+### POST /chat
+
+Authenticated chatbot endpoint. The request must include the same JWT bearer token used by the dashboard. The model maps the message to a server-validated action, and the server enforces role and ownership permissions before touching data.
+
+Request:
+
+```json
+{
+  "message": "Show my open tickets"
+}
+```
+
+or:
+
+```json
+{
+  "messages": [
+    { "role": "user", "content": "Show my open tickets" }
+  ]
+}
+```
+
+Response:
+
+```json
+{
+  "reply": "I found 3 matching tickets you created. Here are the first 3 links.",
+  "links": [{ "label": "Cannot log in", "href": "/tickets/abc" }],
+  "action": "list_tickets",
+  "permission": "read",
+  "plannedAction": {
+    "action": "list_tickets",
+    "params": { "status": "OPEN" }
+  }
+}
+```
+
+The chatbot does not expose delete actions. See [agent.md](agent.md) for the agent contract.

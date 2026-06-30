@@ -2,6 +2,7 @@ import cors from "cors";
 import express from "express";
 import adminRoutes from "./routes/admin.js";
 import authRoutes from "./routes/auth.js";
+import chatRoutes from "./routes/chat.js";
 import ticketRoutes from "./routes/tickets.js";
 import { configuredCorsOrigins, env } from "./env.js";
 import { errorHandler } from "./errors.js";
@@ -45,6 +46,7 @@ app.get("/health", (_request, response) => {
 });
 
 app.use("/api", authRoutes);
+app.use("/api", chatRoutes);
 app.use("/api", ticketRoutes);
 app.use("/api", adminRoutes);
 app.use(errorHandler);

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { clearSession, getStoredUser, type User } from "@/lib/api";
+import { ChatWidget } from "./ChatWidget";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: BarChart3 },
@@ -67,6 +68,7 @@ export function AppShell({ children, user }: { children: ReactNode; user?: User 
         </header>
         <main className="px-4 py-6 md:px-8">{children}</main>
       </div>
+      {currentUser ? <ChatWidget user={currentUser} /> : null}
     </div>
   );
 }

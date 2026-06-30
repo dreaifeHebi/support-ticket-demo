@@ -8,6 +8,7 @@ First version target: complete local demo with usable API and usable pages.
 
 - Admin can view all tickets, search/filter/sort/paginate, update status, change priority, assign an owner, comment, and view dashboard stats.
 - User can register, log in, create tickets, view only their own tickets, and comment on their own tickets.
+- V2 chatbot can answer ticket questions and run allowed ticket actions from a bottom-right floating panel.
 - Status changes write `ticket_status_history`.
 - Setting a ticket to `RESOLVED` sets `resolvedAt` when empty.
 - Reopening to `OPEN` or `IN_PROGRESS` clears `resolvedAt`.
@@ -19,6 +20,7 @@ First version target: complete local demo with usable API and usable pages.
 - Database: PostgreSQL
 - ORM: Prisma
 - Auth: JWT, bcrypt
+- Chatbot: OpenAI-compatible Chat Completions API through `OPENAI_BASE_URL`, `OPENAI_API_KEY`, and `DEFAULT_MODEL`
 - DevOps: Docker Compose
 
 ## Demo Accounts
@@ -79,6 +81,9 @@ JWT_SECRET=replace-with-a-long-random-secret
 PORT=4000
 CORS_ORIGIN=http://localhost:3000,http://localhost:3001
 NEXT_PUBLIC_API_URL=http://localhost:4000/api
+OPENAI_BASE_URL=https://api.openai.com/v1
+OPENAI_API_KEY=replace-with-your-openai-compatible-key
+DEFAULT_MODEL=gpt-4.1-mini
 ```
 
 ## Main API Endpoints
@@ -94,6 +99,7 @@ NEXT_PUBLIC_API_URL=http://localhost:4000/api
 - `POST /api/tickets/:id/comments`
 - `GET /api/admin/stats`
 - `GET /api/admin/users`
+- `POST /api/chat`
 
 See [docs/api.md](docs/api.md) for request and response details.
 
@@ -107,6 +113,17 @@ Main tables:
 - `ticket_status_history`
 
 See [docs/database.md](docs/database.md) for model details and access rules.
+
+## Chatbot Agent
+
+The authenticated chatbot lives in a bottom-right floating panel after login. It uses an OpenAI-compatible Chat Completions API and maps each message to a server-validated action. The model never receives direct Prisma or SQL access.
+
+Agent rules are documented in [docs/agent.md](docs/agent.md):
+
+- Query requests use read-only tools.
+- Update requests use update tools after JWT, role, and ownership checks.
+- Delete tools do not exist.
+- Replies include links such as `/tickets/:id` instead of claiming to open pages.
 
 ## Screenshots / Demo URL
 
@@ -129,6 +146,10 @@ Ticket list with search/filtering:
 Ticket detail with comments, status history, and admin controls:
 
 ![Ticket detail](output/playwright/ticket-detail.png)
+
+Bottom-right chatbot widget:
+
+![Chatbot widget](output/playwright/chatbot-widget.png)
 
 ## Known Tradeoffs
 
