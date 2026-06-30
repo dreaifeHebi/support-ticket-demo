@@ -47,6 +47,7 @@ npm run dev
 Local URLs:
 
 - Web: http://localhost:3000
+- Web fallback when `3000` is busy: http://localhost:3001
 - API: http://localhost:4000
 - Health check: http://localhost:4000/health
 
@@ -103,7 +104,25 @@ See [docs/database.md](docs/database.md) for model details and access rules.
 
 ## Screenshots / Demo URL
 
-Screenshots, GIF, and online demo URL are still pending. The first deliverable is the local full-stack demo and private GitHub repository.
+Current demo URL:
+
+- Local web app: http://localhost:3000
+- Local fallback used during verification when `3000` was already occupied: http://localhost:3001
+- API health check: http://localhost:4000/health
+
+The GitHub repository is private for now by request. A public hosted demo URL can be added after choosing a deployment target for the Next.js app, Express API, and PostgreSQL database.
+
+Admin dashboard:
+
+![Admin dashboard](output/playwright/admin-dashboard.png)
+
+Ticket list with search/filtering:
+
+![Ticket list with filters](output/playwright/ticket-list-filters.png)
+
+Ticket detail with comments, status history, and admin controls:
+
+![Ticket detail](output/playwright/ticket-detail.png)
 
 ## Known Tradeoffs
 
