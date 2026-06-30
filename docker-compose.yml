@@ -54,7 +54,7 @@ services:
       - .:/app
       - web_node_modules:/app/node_modules
       - web_next:/app/apps/web/.next
-    command: sh -c "npm install && npm run dev -w apps/web"
+    command: sh -c "npm install && npm run dev -w apps/web -- -H 0.0.0.0"
 
 volumes:
   postgres_data:

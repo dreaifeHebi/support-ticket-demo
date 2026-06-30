@@ -51,6 +51,12 @@ Local URLs:
 - API: http://localhost:4000
 - Health check: http://localhost:4000/health
 
+LAN access:
+
+- Open the web app from another device with the host machine IP, for example `http://192.168.1.5:3001`.
+- The frontend rewrites a local API URL such as `http://localhost:4000/api` to the same LAN host, for example `http://192.168.1.5:4000/api`.
+- The API allows CORS from localhost, private LAN IP origins, and Tailscale-style `100.64.0.0/10` origins for local demo use.
+
 PostgreSQL must be running and reachable through `DATABASE_URL`. For a quick local database:
 
 ```bash

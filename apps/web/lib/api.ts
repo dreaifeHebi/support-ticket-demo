@@ -48,7 +48,24 @@ export type AdminStats = {
   ticketsCreatedThisWeek: Array<{ date: string; count: number }>;
 };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
+const configuredApiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
+
+function resolveApiUrl() {
+  if (typeof window === "undefined") {
+    return configuredApiUrl;
+  }
+
+  const apiUrl = new URL(configuredApiUrl);
+  const pageHost = window.location.hostname;
+  const apiHostIsLocal = apiUrl.hostname === "localhost" || apiUrl.hostname === "127.0.0.1";
+  const pageHostIsLocal = pageHost === "localhost" || pageHost === "127.0.0.1";
+
+  if (apiHostIsLocal && !pageHostIsLocal) {
+    apiUrl.hostname = pageHost;
+  }
+
+  return apiUrl.toString().replace(/\/$/, "");
+}
 
 export function getToken() {
   if (typeof window === "undefined") {
@@ -77,7 +94,7 @@ export function getStoredUser(): User | null {
 }
 
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const response = await fetch(`${API_URL}${path}`, {
+  const response = await fetch(`${resolveApiUrl()}${path}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",
