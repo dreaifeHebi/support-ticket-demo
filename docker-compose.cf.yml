@@ -1,0 +1,91 @@
+name: support-ticket-demo
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: support-ticket-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-support_ticket_demo}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env before deploying}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-support_ticket_demo}"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  db-setup:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    profiles:
+      - setup
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env before deploying}@support-ticket-postgres:5432/${POSTGRES_DB:-support_ticket_demo}?schema=public
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env before deploying}
+      PORT: 4000
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://support-ticket.dreaifehebi.com}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      DEFAULT_MODEL: ${DEFAULT_MODEL:-gpt-4.1-mini}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: sh -c "npx prisma db push && npm run seed"
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: support-ticket-api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env before deploying}@support-ticket-postgres:5432/${POSTGRES_DB:-support_ticket_demo}?schema=public
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env before deploying}
+      PORT: 4000
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://support-ticket.dreaifehebi.com}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      DEFAULT_MODEL: ${DEFAULT_MODEL:-gpt-4.1-mini}
+    ports:
+      - "127.0.0.1:${API_HOST_PORT:-4100}:4000"
+    networks:
+      default:
+      tunnel:
+        aliases:
+          - support-ticket-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://support-ticket-api.dreaifehebi.com/api}
+    container_name: support-ticket-web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://support-ticket-api.dreaifehebi.com/api}
+    ports:
+      - "127.0.0.1:${WEB_HOST_PORT:-3100}:3000"
+    networks:
+      default:
+      tunnel:
+        aliases:
+          - support-ticket-web
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+
+networks:
+  tunnel:
+    external: true
+    name: ${TUNNEL_NETWORK:?Set TUNNEL_NETWORK to the Docker network used by cloudflared}

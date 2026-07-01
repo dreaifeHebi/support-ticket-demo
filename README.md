@@ -73,6 +73,14 @@ docker compose up
 
 The compose file starts PostgreSQL, runs Prisma generate/db push/seed, starts the Express API on port `4000`, and starts Next.js on port `3000`.
 
+For the home-server Cloudflare Tunnel deployment, use:
+
+```bash
+docker compose -f docker-compose.cf.yml up -d --build
+```
+
+See [docs/deploy-cloudflare-tunnel.md](docs/deploy-cloudflare-tunnel.md) for the tunnel hostnames, ports, DNS records, and database setup command.
+
 ## Environment Variables
 
 ```txt
@@ -129,11 +137,13 @@ Agent rules are documented in [docs/agent.md](docs/agent.md):
 
 Current demo URL:
 
-- Local web app: http://localhost:3000
+- Hosted web app: https://support-ticket.dreaifehebi.com
+- Hosted API health check: https://support-ticket-api.dreaifehebi.com/health
+- Local web app: http://localhost:3100
 - Local fallback used during verification when `3000` was already occupied: http://localhost:3001
-- API health check: http://localhost:4000/health
+- API health check: http://localhost:4100/health
 
-The GitHub repository is private for now by request. A public hosted demo URL can be added after choosing a deployment target for the Next.js app, Express API, and PostgreSQL database.
+The hosted demo runs on the home server behind Cloudflare Tunnel.
 
 Admin dashboard:
 
