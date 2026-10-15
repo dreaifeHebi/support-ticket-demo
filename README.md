@@ -1,169 +1,171 @@
 # Support Ticket Demo
 
-Full-stack SaaS admin dashboard demo for support ticket operations. It is built to show the kind of practical maintenance and feature work common in Upwork contracts: JWT auth, role-based access, table filters, pagination, ticket CRUD, comments, status history, PostgreSQL modeling, Prisma queries, and REST API handoff docs.
+A full-stack SaaS support ticket dashboard with role-based access, a filterable ticket table, comments, status history, admin metrics, and an authenticated chatbot that can query and update tickets within the signed-in user's permissions.
 
-## Current Status
+It is a portfolio project that shows the everyday work business admin dashboards need: JWT auth, role-based access control, search / filter / sort / pagination backed by a REST API, CRUD forms, status workflows with an audit trail, PostgreSQL modeling with Prisma, and API handoff docs.
 
-First version target: complete local demo with usable API and usable pages.
+**Live demo:** https://support-ticket.dreaifehebi.com
 
-- Admin can view all tickets, search/filter/sort/paginate, update status, change priority, assign an owner, comment, and view dashboard stats.
-- User can register, log in, create tickets, view only their own tickets, and comment on their own tickets.
-- V2 chatbot can answer ticket questions and run allowed ticket actions from a bottom-right floating panel or the full `/chat` page.
-- Status changes write `ticket_status_history`.
-- Setting a ticket to `RESOLVED` sets `resolvedAt` when empty.
-- Reopening to `OPEN` or `IN_PROGRESS` clears `resolvedAt`.
+| Role  | Email               | Password      |
+| ----- | ------------------- | ------------- |
+| Admin | `admin@example.com` | `password123` |
+| User  | `user@example.com`  | `password123` |
+
+The login page has one-click buttons for both demo accounts.
+
+## Screenshots
+
+Admin dashboard with live metrics:
+
+![Admin dashboard](docs/images/admin-dashboard.png)
+
+Ticket list with search, filters, sorting, and pagination:
+
+![Ticket list with filters](docs/images/ticket-list-filters.png)
+
+Ticket detail with comments, status history, and admin controls:
+
+![Ticket detail](docs/images/ticket-detail.png)
+
+Chatbot panel answering a question scoped to the signed-in user:
+
+![Chatbot widget](docs/images/chatbot-widget.png)
+
+## Features
+
+### Admin
+
+- Operations dashboard: total, open, resolved, and urgent ticket counts, average resolution time, tickets by status, and tickets created over the last 7 days.
+- Ticket table across all users with keyword search, filters for status, priority, category, and assignee, sorting, and pagination.
+- Update status, change priority, assign an owner, and reply in comments on any ticket.
+
+### User
+
+- Register and log in.
+- Create tickets and see only their own tickets.
+- Edit and comment on their own tickets.
+
+### Ticket workflow
+
+- Every status change writes a `ticket_status_history` record.
+- Setting a ticket to `RESOLVED` sets `resolvedAt` if it is empty; reopening to `OPEN` or `IN_PROGRESS` clears it; `CLOSED` keeps it.
+- The API rejects invalid status and priority values and blocks users from other users' tickets and from admin-only endpoints.
+
+### Chatbot
+
+- Available as a bottom-right floating panel after login and as a full `/chat` page; both share the same conversation history.
+- Answers ticket questions and runs allowed actions: list and read tickets, create tickets, add comments, and (for admins) change status, change priority, and assign tickets.
+- The model only chooses an action from a fixed list. The API checks the JWT user, role, and ticket ownership before running it, and the model never gets direct database access.
+- There are no delete actions. Replies link to pages such as `/tickets/:id` instead of claiming to open them.
+
+Action list and permission model: [docs/agent.md](docs/agent.md).
 
 ## Tech Stack
 
-- Frontend: Next.js, React, TypeScript, Tailwind CSS, Recharts
-- Backend: Node.js, Express, TypeScript
-- Database: PostgreSQL
-- ORM: Prisma
-- Auth: JWT, bcrypt
-- Chatbot: OpenAI-compatible Chat Completions API through `OPENAI_BASE_URL`, `OPENAI_API_KEY`, and `DEFAULT_MODEL`
-- DevOps: Docker Compose
+- **Frontend:** Next.js, React, TypeScript, Tailwind CSS, Recharts
+- **Backend:** Node.js, Express, TypeScript, Zod
+- **Database:** PostgreSQL with Prisma ORM
+- **Auth:** JWT, bcrypt
+- **Chatbot:** any OpenAI-compatible Chat Completions API
+- **DevOps:** Docker Compose; the hosted demo runs behind Cloudflare Tunnel
 
-## Demo Accounts
+npm workspaces monorepo:
 
 ```txt
-Admin
-email: admin@example.com
-password: password123
-
-User
-email: user@example.com
-password: password123
+apps/web          Next.js frontend
+apps/api          Express API
+packages/shared   Shared enums and types
+prisma/           Schema and seed data
+docs/             API, database, chatbot, and deployment docs
 ```
 
-## Local Setup
+## Quick Start
+
+### Local
+
+Requires Node.js (the Docker setup uses Node 22) and a reachable PostgreSQL database.
 
 ```bash
 npm install
 cp .env.example .env
+docker compose up -d postgres   # optional: run only the database in Docker
 npm run db:generate
 npm run db:push
 npm run seed
 npm run dev
 ```
 
-Local URLs:
-
 - Web: http://localhost:3000
-- Web fallback when `3000` is busy: http://localhost:3001
 - API: http://localhost:4000
 - Health check: http://localhost:4000/health
 
-LAN access:
+The seed creates the demo accounts above, extra admins and users, and 56 sample tickets with comments and status history, so filters, pagination, and charts have data to show.
 
-- Open the web app from another device with the host machine IP, for example `http://192.168.1.5:3001`.
-- The frontend rewrites a local API URL such as `http://localhost:4000/api` to the same LAN host, for example `http://192.168.1.5:4000/api`.
-- The API allows CORS from localhost, private LAN IP origins, and Tailscale-style `100.64.0.0/10` origins for local demo use.
-
-PostgreSQL must be running and reachable through `DATABASE_URL`. For a quick local database:
-
-```bash
-docker compose up -d postgres
-```
-
-## Docker Setup
+### Docker
 
 ```bash
 docker compose up
 ```
 
-The compose file starts PostgreSQL, runs Prisma generate/db push/seed, starts the Express API on port `4000`, and starts Next.js on port `3000`.
+This starts PostgreSQL, runs Prisma generate, `db push`, and the seed, then serves the API on port `4000` and the web app on port `3000`.
 
-For the home-server Cloudflare Tunnel deployment, use:
+To use the chatbot, set `OPENAI_API_KEY` in `.env`. Without it, `POST /api/chat` returns `503` and everything else works normally.
 
-```bash
-docker compose -f docker-compose.cf.yml up -d --build
-```
-
-See [docs/deploy-cloudflare-tunnel.md](docs/deploy-cloudflare-tunnel.md) for the tunnel hostnames, ports, DNS records, and database setup command.
+LAN access and other local notes: [docs/local-development.md](docs/local-development.md). The hosted demo is deployed with `docker-compose.cf.yml` behind Cloudflare Tunnel: [docs/deploy-cloudflare-tunnel.md](docs/deploy-cloudflare-tunnel.md).
 
 ## Environment Variables
 
+Copy `.env.example` to `.env`. Main values:
+
+| Variable              | Purpose                                                      |
+| --------------------- | ------------------------------------------------------------ |
+| `DATABASE_URL`        | PostgreSQL connection string                                 |
+| `JWT_SECRET`          | Secret used to sign JWTs                                     |
+| `PORT`                | API port (default `4000`)                                    |
+| `CORS_ORIGIN`         | Comma-separated allowed web origins                          |
+| `NEXT_PUBLIC_API_URL` | API base URL used by the frontend                            |
+| `OPENAI_BASE_URL`     | OpenAI-compatible API base URL                               |
+| `OPENAI_API_KEY`      | Chatbot API key (optional; the chatbot is off when unset)    |
+| `DEFAULT_MODEL`       | Chat model name                                              |
+
+`POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `TUNNEL_NETWORK` are only used by the Cloudflare Tunnel deployment.
+
+## API Overview
+
+All routes are under `/api`. Everything except register and login requires a `Bearer` JWT.
+
+| Method  | Path                    | Description                                              |
+| ------- | ----------------------- | -------------------------------------------------------- |
+| `POST`  | `/auth/register`        | Create a user account                                    |
+| `POST`  | `/auth/login`           | Log in and receive a JWT                                 |
+| `GET`   | `/me`                   | Current user                                             |
+| `GET`   | `/tickets`              | Paginated list with search, filters, and sorting         |
+| `POST`  | `/tickets`              | Create a ticket                                          |
+| `GET`   | `/tickets/:id`          | Ticket detail with comments and status history           |
+| `PATCH` | `/tickets/:id`          | Edit ticket fields; admins can also set priority/assignee |
+| `PATCH` | `/tickets/:id/status`   | Change status and write status history (admin)           |
+| `POST`  | `/tickets/:id/comments` | Add a comment                                            |
+| `GET`   | `/admin/stats`          | Dashboard metrics (admin)                                |
+| `GET`   | `/admin/users`          | Users with ticket counts, for assignment (admin)         |
+| `POST`  | `/chat`                 | Send a chatbot message                                   |
+
+Example list query:
+
 ```txt
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/support_ticket_demo?schema=public
-JWT_SECRET=replace-with-a-long-random-secret
-PORT=4000
-CORS_ORIGIN=http://localhost:3000,http://localhost:3001
-NEXT_PUBLIC_API_URL=http://localhost:4000/api
-OPENAI_BASE_URL=https://api.openai.com/v1
-OPENAI_API_KEY=replace-with-your-openai-compatible-key
-DEFAULT_MODEL=gpt-4.1-mini
+GET /api/tickets?page=1&limit=10&search=login&status=OPEN&priority=HIGH&sort=createdAt&order=desc
 ```
 
-## Main API Endpoints
+Request and response details: [docs/api.md](docs/api.md).
 
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `GET /api/me`
-- `GET /api/tickets`
-- `POST /api/tickets`
-- `GET /api/tickets/:id`
-- `PATCH /api/tickets/:id`
-- `PATCH /api/tickets/:id/status`
-- `POST /api/tickets/:id/comments`
-- `GET /api/admin/stats`
-- `GET /api/admin/users`
-- `POST /api/chat`
+## Data Model
 
-See [docs/api.md](docs/api.md) for request and response details.
+Four tables: `users`, `tickets`, `comments`, and `ticket_status_history`. Users have a `USER` or `ADMIN` role. Tickets have a status (`OPEN`, `IN_PROGRESS`, `RESOLVED`, `CLOSED`), a priority (`LOW`, `MEDIUM`, `HIGH`, `URGENT`), a category, a creator, and an optional assignee.
 
-## Database Summary
+Field lists and access rules: [docs/database.md](docs/database.md). Schema: [prisma/schema.prisma](prisma/schema.prisma).
 
-Main tables:
+## Design Tradeoffs
 
-- `users`
-- `tickets`
-- `comments`
-- `ticket_status_history`
-
-See [docs/database.md](docs/database.md) for model details and access rules.
-
-## Chatbot Agent
-
-The authenticated chatbot lives in a bottom-right floating panel after login and has a dedicated `/chat` page for longer conversations. Both surfaces share browser-local chat history, so prior Q&A stays visible while moving between dashboard, ticket, and chat pages. It uses an OpenAI-compatible Chat Completions API and maps each message to a server-validated action. The model never receives direct Prisma or SQL access.
-
-Agent rules are documented in [docs/agent.md](docs/agent.md):
-
-- Query requests use read-only tools.
-- Update requests use update tools after JWT, role, and ownership checks.
-- Delete tools do not exist.
-- Replies include links such as `/tickets/:id` instead of claiming to open pages.
-
-## Screenshots / Demo URL
-
-Current demo URL:
-
-- Hosted web app: https://support-ticket.dreaifehebi.com
-- Hosted API health check: https://support-ticket-api.dreaifehebi.com/health
-- Local web app: http://localhost:3100
-- Local fallback used during verification when `3000` was already occupied: http://localhost:3001
-- API health check: http://localhost:4100/health
-
-The hosted demo runs on the home server behind Cloudflare Tunnel.
-
-Admin dashboard:
-
-![Admin dashboard](output/playwright/admin-dashboard.png)
-
-Ticket list with search/filtering:
-
-![Ticket list with filters](output/playwright/ticket-list-filters.png)
-
-Ticket detail with comments, status history, and admin controls:
-
-![Ticket detail](output/playwright/ticket-detail.png)
-
-Bottom-right chatbot widget:
-
-![Chatbot widget](output/playwright/chatbot-widget.png)
-
-## Known Tradeoffs
-
-- This first version uses simple localStorage token handling to keep the demo fast to inspect.
-- Chat history is persisted in browser localStorage per user for demo continuity, not in a server-side conversation table.
-- Docker Compose uses `prisma db push` for frictionless demo startup instead of committed production migrations.
-- No file attachments, SLA timers, CSV export, or email notifications yet.
+- **Token storage:** the JWT is kept in `localStorage` so the demo is easy to inspect. A production app would use httpOnly cookies.
+- **Chat history:** stored in the browser per user. The chat API is stateless and receives recent messages with each request; there is no server-side conversation table.
+- **Schema changes:** setup uses `prisma db push` for a one-command start instead of committed migrations.
+- **Scope:** file attachments, SLA timers, CSV export, and email notifications are out of scope.

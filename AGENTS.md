@@ -343,7 +343,14 @@ The final README should include:
 - Environment variables
 - Main API endpoints
 - Database schema summary
-- Known tradeoffs
+- Design tradeoffs
+
+README rules:
+
+- README is public-facing. Write it for visitors (potential clients and developers): what the project is, the live demo, demo accounts, screenshots, features, and setup.
+- Do not put progress, status, version targets ("first version", "V2"), verification notes, or local troubleshooting history in README. Record progress and status in `docs/` (for example `docs/progress.md`) instead.
+- Keep long reference material in `docs/` (`api.md`, `database.md`, `agent.md`, `local-development.md`) and link it from README.
+- README screenshots live in `docs/images/`. Do not link to test output such as `output/playwright/`.
 
 ## Nice-to-Have V2 Features
 
@@ -368,4 +375,4 @@ When continuing this project:
 - Do not build a landing page before the functional dashboard.
 - Keep status, priority, and role enums shared between frontend and backend.
 - Make table filtering and pagination robust, since this is the strongest portfolio signal.
-- Keep README current as the implementation changes.
+- Keep README's public-facing content (features, setup, API overview) accurate as the implementation changes. Record work-in-progress status in `docs/`, not README.
