@@ -169,3 +169,7 @@ Field lists and access rules: [docs/database.md](docs/database.md). Schema: [pri
 - **Chat history:** stored in the browser per user. The chat API is stateless and receives recent messages with each request; there is no server-side conversation table.
 - **Schema changes:** setup uses `prisma db push` for a one-command start instead of committed migrations.
 - **Scope:** file attachments, SLA timers, CSV export, and email notifications are out of scope.
+
+## License
+
+[MIT](LICENSE)
