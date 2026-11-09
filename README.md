@@ -4,7 +4,9 @@ A full-stack SaaS support ticket dashboard with role-based access, a filterable 
 
 It is a portfolio project that shows the everyday work business admin dashboards need: JWT auth, role-based access control, search / filter / sort / pagination backed by a REST API, CRUD forms, status workflows with an audit trail, PostgreSQL modeling with Prisma, and API handoff docs.
 
-**Live demo:** https://support-ticket.dreaifehebi.com
+**Live demo:** https://support-ticket.dreaifehebi.com (the app is branded SupportOps)
+
+**API:** https://support-ticket-api.dreaifehebi.com/api (health check: https://support-ticket-api.dreaifehebi.com/health)
 
 | Role  | Email               | Password      |
 | ----- | ------------------- | ------------- |
